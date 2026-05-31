@@ -2,10 +2,11 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 import logging
 from logging import Formatter, FileHandler
 from forms import * # Keeps your existing forms layout intact
@@ -44,10 +45,27 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
+    homeworks = db.relationship('Homework', backref='user', lazy=True)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+# Homework model to store assignments per user
+class Homework(db.Model):
+    __tablename__ = 'homeworks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    subject = db.Column(db.String(120), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    notes = db.Column(db.Text)
+    start_date = db.Column(db.Date)
+    due_date = db.Column(db.Date)
+    priority = db.Column(db.String(20))
+    status = db.Column(db.String(50), default='Pending')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 #----------------------------------------------------------------------------#
 # Controllers.
@@ -55,13 +73,65 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    return render_template('pages/placeholder.home.html')
+    homeworks = None
+    if current_user.is_authenticated:
+        homeworks = Homework.query.filter_by(user_id=current_user.id).order_by(Homework.due_date.asc()).all()
+    return render_template('pages/placeholder.home.html', homeworks=homeworks)
 
 
 @app.route('/about')
 def about():
     return render_template('pages/placeholder.about.html')
 
+@app.route('/homeworks', methods=['GET', 'POST'])
+@login_required
+def homeworks():
+    form = HomeworkForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        # parse optional dates in YYYY-MM-DD format
+        start = None
+        due = None
+        try:
+            if form.start_date.data:
+                start = datetime.strptime(form.start_date.data, '%Y-%m-%d').date()
+        except Exception:
+            start = None
+        try:
+            if form.due_date.data:
+                due = datetime.strptime(form.due_date.data, '%Y-%m-%d').date()
+        except Exception:
+            due = None
+
+        hw = Homework(
+            user_id=current_user.id,
+            subject=form.subject.data,
+            title=form.title.data,
+            notes=form.notes.data,
+            start_date=start,
+            due_date=due,
+            priority=form.priority.data or 'medium'
+        )
+        db.session.add(hw)
+        db.session.commit()
+        flash('Homework created.', 'success')
+        return redirect(url_for('home'))
+
+    # GET: show form and user's homeworks
+    homeworks_list = Homework.query.filter_by(user_id=current_user.id).order_by(Homework.due_date.asc()).all()
+    return render_template('pages/placeholder.homeworks.html', form=form, homeworks=homeworks_list)
+
+
+@app.route('/homeworks/<int:hw_id>/complete', methods=['POST'])
+@login_required
+def complete_homework(hw_id):
+    hw = Homework.query.get_or_404(hw_id)
+    if hw.user_id != current_user.id:
+        abort(403)
+    hw.status = 'Finished'
+    db.session.commit()
+    flash('Homework marked as finished.', 'success')
+    return redirect(url_for('home'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

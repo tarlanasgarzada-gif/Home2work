@@ -6,68 +6,61 @@
   {% if current_user.is_authenticated %}
     <h1>Welcome back, {{ current_user.name }}!</h1>
   {% else %}
-    <h1>Sticky footer with fixed navbar</h1>
+    <h1>Welcome to Homework App</h1>
   {% endif %}
 </div>
-
 {% if current_user.is_authenticated %}
-  <p class="lead">Great to see you again! Below is your current system status and recent activity logs.</p>
-{% else %}
-  <p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS. A fixed navbar has been added within <code>#wrap</code> with <code>padding-top: 60px;</code> on the <code>.container</code>.</p>
-{% endif %}
+  <p class="lead">Here are your current homeworks across subjects. Use the button below to create a new assignment.</p>
 
-<hr />
+  <p>
+    <a class="btn btn-primary" href="{{ url_for('homeworks') }}"><i class="fa fa-plus"></i> Create Homework</a>
+  </p>
 
-<div class="row">
-  <div class="col-md-12">
-    <h3><i class="fa fa-table"></i> Recent System Activity</h3>
-    <p class="text-muted">This is a live overview of your application's background metrics.</p>
-    
+  {% if homeworks %}
     <div class="table-responsive">
       <table class="table table-striped table-bordered table-hover">
         <thead>
           <tr>
-            <th style="width: 80px;">ID</th>
-            <th>Activity / Event</th>
-            <th>Component</th>
+            <th>Subject</th>
+            <th>Title</th>
+            <th>Start</th>
+            <th>Due</th>
             <th>Status</th>
-            <th>Timestamp</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
+          {% for hw in homeworks %}
           <tr>
-            <td>101</td>
-            <td>User Authentication Sync</td>
-            <td>Flask-Login / SQLite</td>
-            <td><span class="label label-success">Success</span></td>
-            <td>Just now</td>
+            <td>{{ hw.subject }}</td>
+            <td>{{ hw.title }}</td>
+            <td>{{ hw.start_date or '—' }}</td>
+            <td>{{ hw.due_date or '—' }}</td>
+            <td>{{ hw.status or 'Pending' }}</td>
+            <td>
+              {% if hw.status == 'Pending' %}
+                <form method="post" action="{{ url_for('complete_homework', hw_id=hw.id) }}" style="display:inline-block;">
+                  <button type="submit" class="btn btn-success btn-xs">Mark as done</button>
+                </form>
+              {% else %}
+                <span class="label label-default">Finished</span>
+              {% endif %}
+            </td>
           </tr>
-          <tr>
-            <td>102</td>
-            <td>Database Session Clean</td>
-            <td>SQLAlchemy Engine</td>
-            <td><span class="label label-info">Completed</span></td>
-            <td>5 mins ago</td>
-          </tr>
-          <tr>
-            <td>103</td>
-            <td>CSRF Token Validation</td>
-            <td>WTForms / Security</td>
-            <td><span class="label label-warning">Pending</span></td>
-            <td>1 hour ago</td>
-          </tr>
-          <tr>
-            <td>104</td>
-            <td>Error Log Rotation</td>
-            <td>Logging / FileHandler</td>
-            <td><span class="label label-danger">Failed</span></td>
-            <td>Yesterday</td>
-          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
-    
-  </div>
-</div>
+  {% else %}
+    <p class="text-muted">You have no homeworks yet. <a href="{{ url_for('homeworks') }}">Create one now</a>.</p>
+  {% endif %}
+
+{% else %}
+  <p class="lead">Organize assignments, timelines, and reminders across subjects to stay on schedule.</p>
+  <p>
+    <a class="btn btn-success" href="{{ url_for('login') }}">Log in</a>
+    <a class="btn btn-default" href="{{ url_for('register') }}">Register</a>
+  </p>
+{% endif %}
 
 {% endblock %}

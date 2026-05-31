@@ -1,6 +1,7 @@
 from flask_wtf import Form
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, Length
+from wtforms import TextAreaField
 
 # Set your classes here.
 
@@ -31,3 +32,12 @@ class ForgotForm(Form):
     email = StringField(
         'Email', validators=[DataRequired(), Length(min=6, max=40)]
     )
+
+
+class HomeworkForm(Form):
+    subject = StringField('Subject', validators=[DataRequired(), Length(max=100)])
+    title = StringField('Title', validators=[DataRequired(), Length(max=200)])
+    notes = TextAreaField('Notes')
+    start_date = StringField('Start Date (YYYY-MM-DD)')
+    due_date = StringField('Due Date (YYYY-MM-DD)')
+    priority = StringField('Priority (low/medium/high)')

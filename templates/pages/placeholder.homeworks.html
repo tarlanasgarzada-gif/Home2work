@@ -1,0 +1,72 @@
+{% extends 'layouts/main.html' %}
+{% block title %}About{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Homeworks Page</h1>
+</div>
+
+{% if current_user.is_authenticated %}
+  <div class="row">
+    <div class="col-md-6">
+      <h3>Create Homework</h3>
+      <form method="post" action="{{ url_for('homeworks') }}">
+        {{ form.csrf_token }}
+        <div class="form-group">
+          {{ form.subject.label }}
+          {{ form.subject(class_='form-control') }}
+        </div>
+        <div class="form-group">
+          {{ form.title.label }}
+          {{ form.title(class_='form-control') }}
+        </div>
+        <div class="form-group">
+          {{ form.notes.label }}
+          {{ form.notes(class_='form-control', rows=4) }}
+        </div>
+        <div class="form-group">
+          {{ form.start_date.label }}
+          {{ form.start_date(class_='form-control') }}
+        </div>
+        <div class="form-group">
+          {{ form.due_date.label }}
+          {{ form.due_date(class_='form-control') }}
+        </div>
+        <div class="form-group">
+          {{ form.priority.label }}
+          {{ form.priority(class_='form-control') }}
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+      </form>
+    </div>
+
+    <div class="col-md-6">
+      <h3>Your Homeworks</h3>
+      {% if homeworks %}
+        <ul class="list-group">
+          {% for hw in homeworks %}
+            <li class="list-group-item">
+              <div class="pull-right">
+                {% if hw.status == 'Pending' %}
+                  <form method="post" action="{{ url_for('complete_homework', hw_id=hw.id) }}" style="display:inline-block;">
+                    <button type="submit" class="btn btn-success btn-xs">Mark as done</button>
+                  </form>
+                {% else %}
+                  <span class="label label-default">Finished</span>
+                {% endif %}
+              </div>
+              <strong>{{ hw.subject }}:</strong> {{ hw.title }} <br />
+              <small>Start: {{ hw.start_date or '—' }} — Due: {{ hw.due_date or '—' }} — {{ hw.priority or '' }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No homeworks yet.</p>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <p class="text-muted">Please log in to view and create homeworks.</p>
+{% endif %}
+
+{% endblock %}
