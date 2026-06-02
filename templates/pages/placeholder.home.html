@@ -6,51 +6,121 @@
   {% if current_user.is_authenticated %}
     <h1>Welcome back, {{ current_user.name }}!</h1>
   {% else %}
-    <h1>Welcome to Homework App</h1>
+    <h1>Welcome to Home2work</h1>
   {% endif %}
 </div>
 {% if current_user.is_authenticated %}
+  {% if stats %}
+  <div class="row">
+    <div class="col-md-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Total Tasks</div>
+        <div class="panel-body" style="text-align: center;">
+          <h2>{{ stats.total_tasks }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-info">
+        <div class="panel-heading">Tasks with Deadline</div>
+        <div class="panel-body" style="text-align: center;">
+          <h2>{{ stats.tasks_with_deadline }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-warning">
+        <div class="panel-heading">Remaining Tasks</div>
+        <div class="panel-body" style="text-align: center;">
+          <h2>{{ stats.remaining_tasks }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <p class="lead">Here are your current homeworks across subjects. Use the button below to create a new assignment.</p>
 
   <p>
     <a class="btn btn-primary" href="{{ url_for('homeworks') }}"><i class="fa fa-plus"></i> Create Homework</a>
   </p>
 
-  {% if homeworks %}
-    <div class="table-responsive">
-      <table class="table table-striped table-bordered table-hover">
-        <thead>
-          <tr>
-            <th>Subject</th>
-            <th>Title</th>
-            <th>Start</th>
-            <th>Due</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for hw in homeworks %}
-          <tr>
-            <td>{{ hw.subject }}</td>
-            <td>{{ hw.title }}</td>
-            <td>{{ hw.start_date or '—' }}</td>
-            <td>{{ hw.due_date or '—' }}</td>
-            <td>{{ hw.status or 'Pending' }}</td>
-            <td>
-              {% if hw.status == 'Pending' %}
+  {% if pending_homeworks or finished_homeworks %}
+    <h3>Pending Homeworks</h3>
+    {% if pending_homeworks %}
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Title</th>
+              <th>Priority</th>
+              <th>Start</th>
+              <th>Due</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for hw in pending_homeworks %}
+            <tr>
+              <td>{{ hw.subject }}</td>
+              <td>{{ hw.title }}</td>
+              <td>{{ hw.priority|capitalize or 'Medium' }}</td>
+              <td>{{ hw.start_date or '—' }}</td>
+              <td>{{ hw.due_date or '—' }}</td>
+              <td>
                 <form method="post" action="{{ url_for('complete_homework', hw_id=hw.id) }}" style="display:inline-block;">
                   <button type="submit" class="btn btn-success btn-xs">Mark as done</button>
                 </form>
-              {% else %}
+                <a href="{{ url_for('edit_homework', hw_id=hw.id) }}" class="btn btn-info btn-xs">Edit</a>
+                <form method="post" action="{{ url_for('delete_homework', hw_id=hw.id) }}" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this homework?');">
+                  <button type="submit" class="btn btn-danger btn-xs">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted">You have no pending homeworks. <a href="{{ url_for('homeworks') }}">Create one now</a>.</p>
+    {% endif %}
+
+    {% if finished_homeworks %}
+      <h3>Completed Homeworks</h3>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Title</th>
+              <th>Priority</th>
+              <th>Start</th>
+              <th>Due</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for hw in finished_homeworks %}
+            <tr>
+              <td>{{ hw.subject }}</td>
+              <td>{{ hw.title }}</td>
+              <td>{{ hw.priority|capitalize or 'Medium' }}</td>
+              <td>{{ hw.start_date or '—' }}</td>
+              <td>{{ hw.due_date or '—' }}</td>
+              <td>
                 <span class="label label-default">Finished</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+                <a href="{{ url_for('edit_homework', hw_id=hw.id) }}" class="btn btn-info btn-xs" style="margin-top:5px;">Edit</a>
+                <form method="post" action="{{ url_for('delete_homework', hw_id=hw.id) }}" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this homework?');">
+                  <button type="submit" class="btn btn-danger btn-xs" style="margin-top:5px;">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
   {% else %}
     <p class="text-muted">You have no homeworks yet. <a href="{{ url_for('homeworks') }}">Create one now</a>.</p>
   {% endif %}

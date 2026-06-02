@@ -41,27 +41,48 @@
     </div>
 
     <div class="col-md-6">
-      <h3>Your Homeworks</h3>
-      {% if homeworks %}
+      <h3>Pending Homeworks</h3>
+      {% if pending_homeworks %}
         <ul class="list-group">
-          {% for hw in homeworks %}
+          {% for hw in pending_homeworks %}
             <li class="list-group-item">
               <div class="pull-right">
-                {% if hw.status == 'Pending' %}
-                  <form method="post" action="{{ url_for('complete_homework', hw_id=hw.id) }}" style="display:inline-block;">
-                    <button type="submit" class="btn btn-success btn-xs">Mark as done</button>
-                  </form>
-                {% else %}
-                  <span class="label label-default">Finished</span>
-                {% endif %}
+                <form method="post" action="{{ url_for('complete_homework', hw_id=hw.id) }}" style="display:inline-block;">
+                  <button type="submit" class="btn btn-success btn-xs">Mark as done</button>
+                </form>
+                <a href="{{ url_for('edit_homework', hw_id=hw.id) }}" class="btn btn-info btn-xs">Edit</a>
+                <form method="post" action="{{ url_for('delete_homework', hw_id=hw.id) }}" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this homework?');">
+                  <button type="submit" class="btn btn-danger btn-xs">Delete</button>
+                </form>
               </div>
               <strong>{{ hw.subject }}:</strong> {{ hw.title }} <br />
-              <small>Start: {{ hw.start_date or '—' }} — Due: {{ hw.due_date or '—' }} — {{ hw.priority or '' }}</small>
+              <small>Start: {{ hw.start_date or '—' }} — Due: {{ hw.due_date or '—' }} — Priority: {{ hw.priority|capitalize or 'Medium' }}</small>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p class="text-muted">No homeworks yet.</p>
+        <p class="text-muted">No pending homeworks.</p>
+      {% endif %}
+
+      <h3 class="mt-4">Completed Homeworks</h3>
+      {% if finished_homeworks %}
+        <ul class="list-group">
+          {% for hw in finished_homeworks %}
+            <li class="list-group-item list-group-item-success">
+              <div class="pull-right">
+                <span class="label label-default">Finished</span>
+                <a href="{{ url_for('edit_homework', hw_id=hw.id) }}" class="btn btn-info btn-xs" style="margin-left:5px;">Edit</a>
+                <form method="post" action="{{ url_for('delete_homework', hw_id=hw.id) }}" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this homework?');">
+                  <button type="submit" class="btn btn-danger btn-xs" style="margin-left:5px;">Delete</button>
+                </form>
+              </div>
+              <strong>{{ hw.subject }}:</strong> {{ hw.title }} <br />
+              <small>Start: {{ hw.start_date or '—' }} — Due: {{ hw.due_date or '—' }} — Priority: {{ hw.priority|capitalize or 'Medium' }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No completed homeworks yet.</p>
       {% endif %}
     </div>
   </div>

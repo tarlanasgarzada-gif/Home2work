@@ -41,3 +41,12 @@ class HomeworkForm(Form):
     start_date = StringField('Start Date (YYYY-MM-DD)')
     due_date = StringField('Due Date (YYYY-MM-DD)')
     priority = StringField('Priority (low/medium/high)')
+
+
+class ExamForm(Form):
+    subject = StringField('Subject', validators=[DataRequired(), Length(max=100)])
+    title = StringField('Title', validators=[DataRequired(), Length(max=200)])
+    exam_date = StringField('Exam Date (YYYY-MM-DD)', validators=[DataRequired()])
+    exam_time = StringField('Exam Time (HH:MM)', validators=[Length(max=10)])
+    location = StringField('Location', validators=[Length(max=255)])
+    notes = TextAreaField('Notes')

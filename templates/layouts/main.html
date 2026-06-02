@@ -44,12 +44,8 @@
               <a class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li {% if request.endpoint == 'homeworks' %} class="active" {% endif %}><a href="{{ url_for('homeworks') }}">Homeworks</a></li>
-                <li><a>Another action</a></li>
-                <li><a>Something else here</a></li>
-                <li class="divider"></li>
-                <li class="dropdown-header">Nav header</li>
-                <li><a>Separated link</a></li>
-                <li><a>One more separated link</a></li>
+                <li {% if request.endpoint == 'upcoming_exams' %} class="active" {% endif %}><a href="{{ url_for('upcoming_exams') }}">Upcoming Exams</a></li>
+                <li {% if request.endpoint == 'timeline' %} class="active" {% endif %}><a href="{{ url_for('timeline') }}">Timeline</a></li>
               </ul>
             </li>
           </ul>

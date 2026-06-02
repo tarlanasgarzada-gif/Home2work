@@ -1,0 +1,89 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Exam Timeline{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Exam Timeline</h1>
+  <p class="lead">Upcoming exams in the next month</p>
+</div>
+
+{% if current_user.is_authenticated %}
+  {% if timeline_data %}
+    <div class="timeline">
+      {% for date_str, exams in timeline_data|dictsort %}
+        {% set exam_date = exams[0].exam_date %}
+        <div class="timeline-item">
+          <div class="timeline-date">
+            <strong>{{ exam_date.strftime('%A, %B %d, %Y') }}</strong>
+          </div>
+          <div class="timeline-content">
+            {% for exam in exams %}
+              <div class="panel panel-info">
+                <div class="panel-heading">
+                  <strong>{{ exam.subject }}:</strong> {{ exam.title }}
+                </div>
+                <div class="panel-body">
+                  {% if exam.exam_time %}
+                    <p><strong>Time:</strong> {{ exam.exam_time }}</p>
+                  {% endif %}
+                  {% if exam.location %}
+                    <p><strong>Location:</strong> {{ exam.location }}</p>
+                  {% endif %}
+                  {% if exam.notes %}
+                    <p><strong>Notes:</strong> {{ exam.notes }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <style>
+      .timeline {
+        position: relative;
+        padding: 20px 0;
+      }
+      .timeline-item {
+        margin-bottom: 30px;
+        position: relative;
+        padding-left: 30px;
+      }
+      .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background-color: #007bff;
+      }
+      .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #007bff;
+      }
+      .timeline-date {
+        margin-bottom: 10px;
+        color: #333;
+      }
+      .timeline-content .panel {
+        margin: 10px 0;
+      }
+    </style>
+  {% else %}
+    <div class="alert alert-info">
+      <p>No exams scheduled for the next month. <a href="{{ url_for('upcoming_exams') }}">Add an exam</a>.</p>
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-muted">Please log in to view the exam timeline.</p>
+{% endif %}
+
+{% endblock %}
